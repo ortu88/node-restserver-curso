@@ -2,4 +2,6 @@
 Esto es para el curso de node js.
 
 Ejecutar:
-`node server/server`
+```
+node server/server
+```
