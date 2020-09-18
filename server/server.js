@@ -14,9 +14,10 @@ app.use(bodyParser.json());
 app.use( require('./routes/usuario') )
 
 
-mongoose.connect('mongodb://localhost:27017/cafe', {
+mongoose.connect(process.env.URLDB, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useCreateIndex: true
   }, (err, res) => {
     if(err) {
         throw err;
@@ -25,4 +26,4 @@ mongoose.connect('mongodb://localhost:27017/cafe', {
     console.log('Base de datos ONLINE');
 });
 
-app.listen(process.env.PORT, () => console.log('Escuchando puerto: ', 3000));
+app.listen(process.env.PORT, () => console.log('Escuchando puerto: ', process.env.PORT));
