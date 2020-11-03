@@ -10,7 +10,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 
 process.env.URLDB = process.env.NODE_ENV === 'dev' ? 'mongodb://localhost:27017/cafe' : process.env.MONGO_URL;
 
-// vancimiento token
+// vencimiento token
 
 process.env.CADUCIDAD_TOKEN = 60 * 60 * 24 * 30;
 
