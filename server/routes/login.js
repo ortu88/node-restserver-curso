@@ -54,6 +54,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/google', async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     const token = req.body.idtoken;
 
     let response;
