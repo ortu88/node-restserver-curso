@@ -3,6 +3,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/usuario');
 
+const {OAuth2Client} = require('google-auth-library');
+const client = new OAuth2Client(process.env.CLIENT_ID);
+
+
 const app = express();
 
 app.post('/login', (req, res) => {
@@ -44,6 +48,97 @@ app.post('/login', (req, res) => {
             usuario: usuarioDB,
             token
         });
+
+    });
+
+});
+
+app.post('/google', async (req, res) => {
+    const token = req.body.idtoken;
+
+    let response;
+
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.CLIENT_ID
+        });
+
+        const payload = ticket.getPayload();
+        const userid = payload['sub'];
+
+        response = {
+            nombre: payload.name,
+            email: payload.email,
+            img: payload.picture,
+            google: true
+        };
+
+    } catch (err) {
+        console.log(err);
+        return res.status(403).json({
+            ok: false,
+            error: err
+        });
+    }
+
+
+    Usuario.findOne({email: response.email}, (err, usuarioDB) => {
+        if(err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            });
+        }
+
+        if(usuarioDB) {
+            if(!usuarioDB.google) {
+                return res.status(500).json({
+                    ok: false,
+                    err: {
+                        message: 'Debe usar usuario normal'
+                    }
+                });
+            } else {
+                const token = jwt.sign({
+                    usuario: usuarioDB
+                }, process.env.SEED, {expiresIn: process.env.CADUCIDAD_TOKEN});
+
+                return res.json({
+                    ok: true,
+                    usuario: usuarioDB,
+                    token
+                });
+            }
+        } else {
+            // si el usuario no existe en la BD
+            const usuario = new Usuario();
+            usuario.nombre = response.nombre;
+            usuario.email = response.email;
+            usuario.img = response.img;
+            usuario.google = true;
+            usuario.password = ':)';
+
+            usuario.save((err, usuarioDB) => {
+                if(err) {
+                    return res.status(500).json({
+                        ok: false,
+                        err
+                    });
+                }
+
+                const token = jwt.sign({
+                    usuario: usuarioDB
+                }, process.env.SEED, {expiresIn: process.env.CADUCIDAD_TOKEN});
+
+                return res.json({
+                    ok: true,
+                    usuario: usuarioDB,
+                    token
+                });
+
+            });
+        }
 
     });
 
