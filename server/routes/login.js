@@ -54,19 +54,17 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/google', async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    const token = req.body.idtoken;
+    const idtoken = req.body.idtoken;
 
     let response;
 
     try {
         const ticket = await client.verifyIdToken({
-            idToken: token,
+            idToken: idtoken,
             audience: process.env.CLIENT_ID
         });
 
         const payload = ticket.getPayload();
-        const userid = payload['sub'];
 
         response = {
             nombre: payload.name,
@@ -120,21 +118,21 @@ app.post('/google', async (req, res) => {
             usuario.google = true;
             usuario.password = ':)';
 
-            usuario.save((err, usuarioDB) => {
-                if(err) {
+            usuario.save((_err, _usuarioDB) => {
+                if(_err) {
                     return res.status(500).json({
                         ok: false,
-                        err
+                        err: _err
                     });
                 }
 
                 const token = jwt.sign({
-                    usuario: usuarioDB
+                    usuario: _usuarioDB
                 }, process.env.SEED, {expiresIn: process.env.CADUCIDAD_TOKEN});
 
                 return res.json({
                     ok: true,
-                    usuario: usuarioDB,
+                    usuario: _usuarioDB,
                     token
                 });
 
